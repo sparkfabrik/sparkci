@@ -55,21 +55,11 @@ jobs:
           go-version: ">=1.24"
           cache: true
 
-      - name: Set snapshot flag for development builds
-        id: release-type
-        run: |
-          if [[ $GITHUB_REF != refs/tags/v* ]]; then
-            echo "snapshot=--snapshot" >> $GITHUB_OUTPUT
-          else
-            echo "snapshot=" >> $GITHUB_OUTPUT
-          fi
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean ${{ steps.release-type.outputs.snapshot }}
+          args: release --clean ${{ startsWith(github.ref, 'refs/heads/') && '--snapshot' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}

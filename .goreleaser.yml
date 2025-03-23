@@ -1,3 +1,6 @@
+# .goreleaser.yaml - Configuration for both stable and development releases
+version: 2
+
 project_name: sparkci
 
 before:
@@ -5,38 +8,63 @@ before:
     - go mod tidy
 
 builds:
-  - main: ./cmd/sparkci
-    env:
+  - env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
       - darwin
     goarch:
       - amd64
       - arm64
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser
     mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+      - -X main.builtBy=goreleaser
 
 archives:
   - format: tar.gz
     name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{ if or .IsSnapshot (not .IsTag) }}
+      {{- .ProjectName }}_
+      {{- .ShortCommit }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{ else }}
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{ end }}
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - README.md
+      - LICENSE
 
 checksum:
   name_template: "checksums.txt"
+  algorithm: sha256
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  name_template: "dev-{{.ShortCommit}}"
+
+release:
+  github:
+    owner: sparkfabrik
+    name: sparkci
+  prerelease: "{{ or .IsSnapshot (not .IsTag) }}"
+  name_template: >-
+    {{ if .IsTag }}
+    Release {{ .Tag }}
+    {{ else }}
+    Development build {{.ShortCommit}} ({{.Date}})
+    {{ end }}
 
 changelog:
   sort: asc
