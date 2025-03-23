@@ -55,11 +55,15 @@ jobs:
           go-version: ">=1.24"
           cache: true
 
+      - name: Set GORELEASER_CURRENT_TAG for main branch
+        if: github.ref == 'refs/heads/main'
+        run: echo "GORELEASER_CURRENT_TAG=latest" >> $GITHUB_ENV
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean ${{ startsWith(github.ref, 'refs/heads/') && '--snapshot' || '' }}
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

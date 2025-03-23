@@ -16,8 +16,8 @@ builds:
     goarch:
       - amd64
       - arm64
-    mod_timestamp: "{{ .CommitTimestamp }}"
     main: ./cmd/sparkci
+    mod_timestamp: "{{ .CommitTimestamp }}"
     flags:
       - -trimpath
     ldflags:
@@ -28,7 +28,9 @@ builds:
       - -X main.builtBy=goreleaser
 
 archives:
-  - format: tar.gz
+  - format_overrides:
+      - goos: windows
+        format: zip
     name_template: >-
       {{ if or .IsSnapshot (not .IsTag) }}
       {{- .ProjectName }}_
@@ -41,9 +43,6 @@ archives:
       {{- .Os }}_
       {{- .Arch }}
       {{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
     files:
       - README.md
       - LICENSE
@@ -53,7 +52,7 @@ checksum:
   algorithm: sha256
 
 snapshot:
-  name_template: "dev-{{.ShortCommit}}"
+  use_custom_tag: true
 
 release:
   github:
@@ -64,15 +63,8 @@ release:
     {{ if .IsTag }}
     Release {{ .Tag }}
     {{ else }}
-    Development build {{.ShortCommit}} ({{.Date}})
+    Development build (Latest)
     {{ end }}
-
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "^ci:"
-      - Merge pull request
-      - Merge branch
+  mode: "{{ if .IsTag }}append{{ else }}replace{{ end }}"
+  tag_name: "{{ if .IsTag }}{{ .Tag }}{{ else }}latest{{ end }}"
+  disable: false
