@@ -59,22 +59,34 @@ jobs:
           go-version: ">=1.24"
           cache: true
 
-      # For main branch pushes, create or update a 'latest' tag
-      # This ensures the release is associated with the 'latest' tag
-      - name: Create/update latest tag
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git tag -f latest  # Force update the latest tag
-          git push -f origin latest  # Force push the latest tag
-
-      # Run GoReleaser to build and publish the release
-      - name: Run GoReleaser
+      # For tag pushes, do a normal release
+      # For main branch pushes, use snapshot mode and manually upload to GitHub Release
+      - name: Build with GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean
+          args: ${{ startsWith(github.ref, 'refs/tags/v') && 'release --clean' || 'build --snapshot' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Only for main branch - Create or update the "latest" release
+      - name: Update Latest Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: Development build (Latest)
+          body: |
+            This is the latest development build from the `main` branch.
+
+            **Commit:** ${{ github.sha }}
+            **Built on:** $(date +'%Y-%m-%d %H:%M:%S')
+
+            ⚠️ This is a pre-release build and may contain bugs or incomplete features.
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

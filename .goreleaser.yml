@@ -1,86 +1,92 @@
-# .goreleaser.yaml - Configuration for both stable and development releases
-version: 2
+name: Build, Test and Release
 
-project_name: sparkci
+# Trigger workflow on push to main, tag push, or PR to main
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*" # Any tag starting with 'v'
+  pull_request:
+    branches:
+      - main
 
-# Actions to run before building the binaries
-before:
-  hooks:
-    - go mod tidy # Ensure Go modules are up to date
+jobs:
+  # Test job: run tests and generate coverage
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for tags and branches
 
-# Build configuration
-builds:
-  - env:
-      - CGO_ENABLED=0 # Disable CGO for cross-compilation
-    goos: # Target operating systems
-      - linux
-      - darwin
-    goarch: # Target architectures
-      - amd64
-      - arm64
-    main: ./cmd/sparkci # Path to the main package
-    mod_timestamp: "{{ .CommitTimestamp }}" # Use commit timestamp for reproducible builds
-    flags:
-      - -trimpath # Remove file paths from binaries for better reproducibility
-    ldflags: # Flags passed to the Go linker
-      - -s -w # Strip debug information to reduce binary size
-      - -X main.version={{ .Version }} # Set version information in the binary
-      - -X main.commit={{ .Commit }} # Set commit hash
-      - -X main.date={{ .Date }} # Set build date
-      - -X main.builtBy=goreleaser # Set builder name
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.20"
+          cache: true # Cache Go modules
 
-# Archive configuration
-archives:
-  - format_overrides: # Override archive format for specific OS
-      - goos: windows
-        format: zip
-    name_template: >- # Template for archive names
-      {{ if .IsSnapshot }}
-      {{- .ProjectName }}_
-      {{- .ShortCommit }}_
-      {{- .Os }}_
-      {{- .Arch }}
-      {{ else }}
-      {{- .ProjectName }}_
-      {{- .Version }}_
-      {{- .Os }}_
-      {{- .Arch }}
-      {{ end }}
-    files: # Additional files to include in archives
-      - README.md
-      - LICENSE
+      - name: Run tests
+        run: make test
 
-# Checksum configuration
-checksum:
-  name_template: "checksums.txt" # Name of the checksums file
-  algorithm: sha256 # Checksum algorithm to use
+      - name: Generate code coverage
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-# Snapshot configuration for development builds
-snapshot:
-  name_template: "dev-{{.ShortCommit}}" # Template for snapshot version names
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
+          fail_ci_if_error: false # Don't fail if upload to Codecov fails
 
-# GitHub release configuration
-release:
-  github:
-    owner: sparkfabrik # GitHub organization/owner
-    name: sparkci # Repository name
-  prerelease: "{{ .IsSnapshot }}" # Mark as prerelease if it's a snapshot build
-  name_template: >- # Template for release names
-    {{ if not .IsSnapshot }}
-    Release {{ .Tag }}
-    {{ else }}
-    Development build (Latest)
-    {{ end }}
-  mode: replace # Replace existing releases with the same tag
-  disable: false # Enable releases even for snapshots
+  # Release job: build and publish releases
+  release:
+    name: Release
+    needs: test # Only run after tests pass
+    # Only run on push to main or tag push
+    if: success() && (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for tags and branches
 
-# Changelog configuration
-changelog:
-  sort: asc # Sort changelog entries in ascending order
-  filters:
-    exclude: # Patterns to exclude from changelog
-      - "^docs:"
-      - "^test:"
-      - "^ci:"
-      - Merge pull request
-      - Merge branch
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ">=1.24"
+          cache: true
+
+      # For tag pushes, do a normal release
+      # For main branch pushes, use snapshot mode and manually upload to GitHub Release
+      - name: Build with GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: ${{ startsWith(github.ref, 'refs/tags/v') && 'release --clean' || 'build --snapshot' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Only for main branch - Create or update the "latest" release
+      - name: Update Latest Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: Development build (Latest)
+          body: |
+            This is the latest development build from the `main` branch.
+
+            **Commit:** ${{ github.sha }}
+            **Built on:** $(date +'%Y-%m-%d %H:%M:%S')
+
+            ⚠️ This is a pre-release build and may contain bugs or incomplete features.
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
