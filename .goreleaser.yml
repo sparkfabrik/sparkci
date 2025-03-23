@@ -3,36 +3,39 @@ version: 2
 
 project_name: sparkci
 
+# Actions to run before building the binaries
 before:
   hooks:
-    - go mod tidy
+    - go mod tidy # Ensure Go modules are up to date
 
+# Build configuration
 builds:
   - env:
-      - CGO_ENABLED=0
-    goos:
+      - CGO_ENABLED=0 # Disable CGO for cross-compilation
+    goos: # Target operating systems
       - linux
       - darwin
-    goarch:
+    goarch: # Target architectures
       - amd64
       - arm64
-    main: ./cmd/sparkci
-    mod_timestamp: "{{ .CommitTimestamp }}"
+    main: ./cmd/sparkci # Path to the main package
+    mod_timestamp: "{{ .CommitTimestamp }}" # Use commit timestamp for reproducible builds
     flags:
-      - -trimpath
-    ldflags:
-      - -s -w
-      - -X main.version={{ .Version }}
-      - -X main.commit={{ .Commit }}
-      - -X main.date={{ .Date }}
-      - -X main.builtBy=goreleaser
+      - -trimpath # Remove file paths from binaries for better reproducibility
+    ldflags: # Flags passed to the Go linker
+      - -s -w # Strip debug information to reduce binary size
+      - -X main.version={{ .Version }} # Set version information in the binary
+      - -X main.commit={{ .Commit }} # Set commit hash
+      - -X main.date={{ .Date }} # Set build date
+      - -X main.builtBy=goreleaser # Set builder name
 
+# Archive configuration
 archives:
-  - format_overrides:
+  - format_overrides: # Override archive format for specific OS
       - goos: windows
         format: zip
-    name_template: >-
-      {{ if or .IsSnapshot (not .IsTag) }}
+    name_template: >- # Template for archive names
+      {{ if .IsSnapshot }}
       {{- .ProjectName }}_
       {{- .ShortCommit }}_
       {{- .Os }}_
@@ -43,28 +46,41 @@ archives:
       {{- .Os }}_
       {{- .Arch }}
       {{ end }}
-    files:
+    files: # Additional files to include in archives
       - README.md
       - LICENSE
 
+# Checksum configuration
 checksum:
-  name_template: "checksums.txt"
-  algorithm: sha256
+  name_template: "checksums.txt" # Name of the checksums file
+  algorithm: sha256 # Checksum algorithm to use
 
+# Snapshot configuration for development builds
 snapshot:
-  use_custom_tag: true
+  name_template: "dev-{{.ShortCommit}}" # Template for snapshot version names
 
+# GitHub release configuration
 release:
   github:
-    owner: sparkfabrik
-    name: sparkci
-  prerelease: "{{ or .IsSnapshot (not .IsTag) }}"
-  name_template: >-
-    {{ if .IsTag }}
+    owner: sparkfabrik # GitHub organization/owner
+    name: sparkci # Repository name
+  prerelease: "{{ .IsSnapshot }}" # Mark as prerelease if it's a snapshot build
+  name_template: >- # Template for release names
+    {{ if not .IsSnapshot }}
     Release {{ .Tag }}
     {{ else }}
     Development build (Latest)
     {{ end }}
-  mode: "{{ if .IsTag }}append{{ else }}replace{{ end }}"
-  tag_name: "{{ if .IsTag }}{{ .Tag }}{{ else }}latest{{ end }}"
-  disable: false
+  mode: replace # Replace existing releases with the same tag
+  disable: false # Enable releases even for snapshots
+
+# Changelog configuration
+changelog:
+  sort: asc # Sort changelog entries in ascending order
+  filters:
+    exclude: # Patterns to exclude from changelog
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
