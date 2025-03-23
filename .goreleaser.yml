@@ -60,12 +60,16 @@ snapshot:
   name_template: "dev-{{.ShortCommit}}" # Template for snapshot version names
 
 # GitHub release configuration - only used for tagged releases
+# For snapshots, we handle the release manually in the GitHub workflow
 release:
   github:
     owner: sparkfabrik # GitHub organization/owner
     name: sparkci # Repository name
   prerelease: false # Mark tagged releases as full releases, not pre-releases
-  disable: "{{ .IsSnapshot }}" # Disable automatic releases for snapshots
+
+  # Disable automatic release creation for snapshots
+  # The GitHub workflow will handle snapshot releases separately
+  disable: "{{ .IsSnapshot }}"
 
 # Changelog configuration
 changelog:
