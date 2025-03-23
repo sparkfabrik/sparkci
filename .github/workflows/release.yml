@@ -1,18 +1,16 @@
 name: Build, Test and Release
 
-# Trigger workflow on push to main, tag push, or PR to main
 on:
   push:
     branches:
       - main
     tags:
-      - "v*" # Any tag starting with 'v'
+      - "v*"
   pull_request:
     branches:
       - main
 
 jobs:
-  # Test job: run tests and generate coverage
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -20,13 +18,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Fetch all history for tags and branches
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: ">=1.20"
-          cache: true # Cache Go modules
+          cache: true
 
       - name: Run tests
         run: make test
@@ -38,20 +36,18 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.txt
-          fail_ci_if_error: false # Don't fail if upload to Codecov fails
+          fail_ci_if_error: false
 
-  # Release job: build and publish releases
   release:
     name: Release
-    needs: test # Only run after tests pass
-    # Only run on push to main or tag push
+    needs: test
     if: success() && (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Fetch all history for tags and branches
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -59,19 +55,35 @@ jobs:
           go-version: ">=1.24"
           cache: true
 
-      # For tag pushes, do a normal release
-      # For main branch pushes, use snapshot mode and manually upload to GitHub Release
-      - name: Build with GoReleaser
+      # Get current date for release notes
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+
+      # For tagged releases - use normal release process
+      - name: Release for tags
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: ${{ startsWith(github.ref, 'refs/tags/v') && 'release --clean' || 'build --snapshot' }}
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Only for main branch - Create or update the "latest" release
-      - name: Update Latest Release
+      # For main branch - build in snapshot mode
+      - name: Build for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: build --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # For main branch - create/update latest release
+      - name: Create/Update Latest Release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
@@ -81,12 +93,23 @@ jobs:
             This is the latest development build from the `main` branch.
 
             **Commit:** ${{ github.sha }}
-            **Built on:** $(date +'%Y-%m-%d %H:%M:%S')
+            **Built on:** ${{ steps.date.outputs.date }}
 
             ⚠️ This is a pre-release build and may contain bugs or incomplete features.
           files: |
             dist/*.tar.gz
             dist/checksums.txt
           prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Create latest tag after release creation
+      - name: Create latest tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git tag -f latest
+          git push -f origin latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
