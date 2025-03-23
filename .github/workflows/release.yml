@@ -60,13 +60,6 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
-      # Delete the latest tag before proceeding
-      - name: Delete latest tag
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git push --delete origin latest || true
-        continue-on-error: true
-
       # For tagged releases - use normal release process
       - name: Release for tags
         if: startsWith(github.ref, 'refs/tags/v')
@@ -86,7 +79,7 @@ jobs:
           git config --global user.email 'actions@github.com'
           git tag -f v0.0.0-dev
 
-      # Build using the temporary dev tag
+      # Build using the temporary dev tag with updated skip syntax
       - name: Build for main branch
         if: github.ref == 'refs/heads/main'
         uses: goreleaser/goreleaser-action@v6
@@ -97,8 +90,43 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # For main branch - create/update latest release
-      - name: Create/Update Latest Release
+      # Delete existing latest release if it exists
+      - name: Delete existing latest release
+        if: github.ref == 'refs/heads/main'
+        run: |
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/latest" | \
+            jq -r '.id // empty')
+
+          if [ ! -z "$RELEASE_ID" ]; then
+            echo "Deleting existing release with ID: $RELEASE_ID"
+            curl -s -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
+          else
+            echo "No existing release found with tag 'latest'"
+          fi
+        continue-on-error: true
+
+      # Delete latest tag if it exists
+      - name: Delete latest tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git push --delete origin latest || true
+        continue-on-error: true
+
+      # Create latest tag pointing to the current commit
+      - name: Create latest tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git tag -f latest
+          git push -f origin latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Create a new latest release using the latest tag
+      - name: Create Latest Release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
@@ -115,17 +143,6 @@ jobs:
             dist/*.tar.gz
             dist/checksums.txt
           prerelease: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Create latest tag after release creation
-      - name: Create latest tag
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git tag -f latest
-          git push -f origin latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
