@@ -60,6 +60,13 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
+      # Delete the latest tag before proceeding
+      - name: Delete latest tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git push --delete origin latest || true
+        continue-on-error: true
+
       # For tagged releases - use normal release process
       - name: Release for tags
         if: startsWith(github.ref, 'refs/tags/v')
@@ -71,14 +78,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # For main branch - use release with snapshot to create archives
+      # For main branch - use a temporary "v0.0.0-dev" tag for building
+      - name: Create temporary dev tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git tag -f v0.0.0-dev
+
+      # Build using the temporary dev tag
       - name: Build for main branch
         if: github.ref == 'refs/heads/main'
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean --snapshot
+          args: release --clean --skip-publish --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -113,3 +128,10 @@ jobs:
           git push -f origin latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Clean up temporary tag
+      - name: Clean up temporary dev tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git tag -d v0.0.0-dev || true
+        continue-on-error: true
