@@ -65,31 +65,94 @@ make build
 
 ## Usage
 
-### GitLab CI Environment
+SparkCI provides several command groups for different operations:
 
-Display information about the current GitLab CI environment:
-
-```bash
-sparkci gitlab env
+```
+sparkci [command]
 ```
 
-With different output formats:
+Available Commands:
 
-```bash
-sparkci gitlab env --format json
-sparkci gitlab env --format yaml
-sparkci gitlab env --format table
+```
+gitlab      GitLab CI utilities
+gwif        Google Cloud Workload Identity Federation utilities
+help        Help about any command
 ```
 
-### Google Cloud Workload Identity Federation
+### Command Reference
 
-Commands for working with Google Cloud Workload Identity Federation (WIF) in GitLab CI:
+#### GitLab Commands
 
-```bash
-sparkci gwif auth    # Authenticate with Google Cloud using WIF
-sparkci gwif config  # Configure WIF settings
-sparkci gwif exec    # Execute a command with WIF authentication
 ```
+sparkci gitlab [subcommand]
+```
+
+Subcommands:
+
+- `print-env` - Print information about the current GitLab CI environment
+
+  ```bash
+  # Display GitLab CI environment in default text format
+  sparkci gitlab print-env
+
+  # Output in JSON format
+  sparkci gitlab print-env --format json
+
+  # Output in YAML format
+  sparkci gitlab print-env --format yaml
+  ```
+
+#### Google Workload Identity Federation (GWIF) Commands
+
+```
+sparkci gwif [subcommand]
+```
+
+Subcommands:
+
+- `gcloud-exec` - Execute a gcloud command with WIF authentication
+
+  ```bash
+  # Run a gcloud command using WIF authentication
+  sparkci gwif gcloud-exec -- secrets versions access latest --project="my-project"
+  ```
+
+- `print-gitlab-jwt` - Print the GitLab OIDC JWT token
+
+  ```bash
+  # Print JWT token in JSON format (default)
+  sparkci gwif print-gitlab-jwt
+
+  # Print JWT token in text format
+  sparkci gwif print-gitlab-jwt --format text
+  ```
+
+- `print-sa-token` - Print Google Workload Identity token
+
+  ```bash
+  # Print the Google service account token
+  sparkci gwif print-sa-token
+  ```
+
+- `print-vars` - Print the Workload Identity Federation standard env variables
+
+  ```bash
+  # Print WIF environment variables in formatted output
+  sparkci gwif print-vars
+  ```
+
+- `status` - Check Workload Identity Federation status
+
+  ```bash
+  # Check if WIF is configured (exit code only)
+  sparkci gwif status
+
+  # Check WIF configuration and print errors if any
+  sparkci gwif status --silent=false
+
+  # Check and print WIF configuration details
+  sparkci gwif status --print
+  ```
 
 ## Release Process
 
@@ -147,6 +210,10 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ## Contributing
 
 As this is an experimental project, contributions are welcome but may be subject to significant changes.
+
+## Coding conventions
+
+- https://github.com/spf13/cobra/blob/main/site/content/user_guide.md
 
 ### Development Workflow
 

@@ -24,7 +24,7 @@ const (
 func setupEnvironment(t *testing.T) {
 	t.Setenv("GITLAB_OIDC_TOKEN", testToken)
 	t.Setenv("GCP_WIF_PROJECT_ID", "123456789")
-	t.Setenv("GCP_WIF_POOL_ID", "test-pool")
+	t.Setenv("GCP_WIF_POOL", "test-pool")
 	t.Setenv("GCP_WIF_PROVIDER", "gitlab-provider")
 	t.Setenv("GCP_WIF_SERVICE_ACCOUNT_EMAIL", "test-sa@project-id.iam.gserviceaccount.com")
 }
@@ -34,7 +34,7 @@ func removeEnvironment(t *testing.T) {
 	vars := []string{
 		"GITLAB_OIDC_TOKEN",
 		"GCP_WIF_PROJECT_ID",
-		"GCP_WIF_POOL_ID",
+		"GCP_WIF_POOL",
 		"GCP_WIF_PROVIDER",
 		"GCP_WIF_SERVICE_ACCOUNT_EMAIL",
 	}
@@ -149,7 +149,7 @@ func TestNewWorkloadIdentityConfig(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, config)
 				assert.Equal(t, os.Getenv("GCP_WIF_PROJECT_ID"), config.ProjectNumber)
-				assert.Equal(t, os.Getenv("GCP_WIF_POOL_ID"), config.PoolID)
+				assert.Equal(t, os.Getenv("GCP_WIF_POOL"), config.PoolID)
 				assert.Equal(t, os.Getenv("GCP_WIF_PROVIDER"), config.ProviderID)
 				assert.Equal(t, os.Getenv("GCP_WIF_SERVICE_ACCOUNT_EMAIL"), config.ServiceAccount)
 				assert.Equal(t, testToken, config.GitLabOIDCToken.FromEnv)

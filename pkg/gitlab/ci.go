@@ -55,7 +55,7 @@ func GetCIEnvironment() (*CIEnvironment, error) {
 	return env, nil
 }
 
-// ToMap converts the environment to a map using human-readable keys
+// ToMap converts the stuct to a map using human-readable keys.
 func (env *CIEnvironment) ToMap() map[string]string {
 	result := make(map[string]string)
 

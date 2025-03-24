@@ -18,7 +18,7 @@ builds:
     goarch: # Target architectures
       - amd64
       - arm64
-    main: ./cmd/sparkci # Path to the main package
+    main: . # Path to the main package
     mod_timestamp: "{{ .CommitTimestamp }}" # Use commit timestamp for reproducible builds
     flags:
       - -trimpath # Remove file paths from binaries for better reproducibility
