@@ -13,16 +13,16 @@ var (
 	silent bool
 )
 
-var isConfiguredCmd = &cobra.Command{
-	Use:   "is-configured",
-	Short: "Check if the Workload Identity Federation is configured",
-	Long:  `Check if the Workload Identity Federation is configured in the current environment.`,
+var statusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Check Workload Identity Federation status",
+	Long:  `Verify if Workload Identity Federation is properly configured in the current environment.`,
 	Example: `
 # Check if the Workload Identity Federation is configured, it will just return 0 or 1 as exit code.
-sparkci gwif is-configured
+sparkci gwif status
 
 # Check if the Workload Identity Federation is configured, it will print the error message if not configured.
-sparkci gwif is-configured --silent=false
+sparkci gwif status --silent=false
 	`,
 	SilenceErrors: true,
 	SilenceUsage:  true,
