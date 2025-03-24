@@ -34,9 +34,7 @@ Example:
 		}
 
 		if separatorIndex == -1 {
-			utils.Error("The -- separator is required to separate sparkci command from gcloud arguments.")
-			utils.Error("Example: sparkci gwif exec -- secrets versions access latest --project=\"my-project\"")
-			return nil
+			return cmd.Help()
 		} else {
 			// Skip the -- separator itself
 			gcloudArgs = args[separatorIndex+1:]
