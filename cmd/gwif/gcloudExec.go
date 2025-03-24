@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/sparkfabrik/sparkci/pkg/gwif"
-	"github.com/sparkfabrik/sparkci/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -21,27 +20,9 @@ Example:
 	SilenceErrors:      true,
 	SilenceUsage:       true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Look for the -- separator
-		var gcloudArgs []string
-		separatorIndex := -1
-
-		for i, arg := range args {
-			if arg == "--" {
-				separatorIndex = i
-				break
-			}
-		}
-
-		if separatorIndex == -1 {
+		gcloudArgs, err := validateArgs(args)
+		if err != nil {
 			return cmd.Help()
-		} else {
-			// Skip the -- separator itself
-			gcloudArgs = args[separatorIndex+1:]
-		}
-
-		if len(gcloudArgs) == 0 {
-			utils.Error("No gcloud command provided to execute after the -- separator.")
-			return nil
 		}
 
 		output, err := gwif.GcloudExec(gcloudArgs)
@@ -51,4 +32,28 @@ Example:
 		fmt.Println(output)
 		return nil
 	},
+}
+
+func validateArgs(args []string) ([]string, error) {
+	var gcloudArgs []string
+	separatorIndex := -1
+
+	for i, arg := range args {
+		if arg == "--" {
+			separatorIndex = i
+			break
+		}
+	}
+
+	if separatorIndex == -1 {
+		return nil, fmt.Errorf("missing -- separator. The -- separator MUST be used to separate sparkci command from gcloud arguments")
+	} else {
+		gcloudArgs = args[separatorIndex+1:]
+	}
+
+	if len(gcloudArgs) == 0 {
+		return nil, fmt.Errorf("no gcloud command provided to execute after the -- separator")
+	}
+
+	return gcloudArgs, nil
 }
