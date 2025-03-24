@@ -30,7 +30,6 @@ sparkci gwif status --silent=false
 		wifConfig, err := gwif.NewWorkloadIdentityConfig()
 		if err != nil {
 			if silent {
-
 				os.Exit(1)
 			}
 			return err

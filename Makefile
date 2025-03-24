@@ -46,7 +46,7 @@ mod: ## Tidy and verify dependencies
 	go mod verify
 
 dev: ## Run the application in development mode
-	go run ./cmd/sparkci
+	go run .
 
 ci: lint test build ## Run CI tasks
 
