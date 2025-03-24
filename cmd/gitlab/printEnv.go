@@ -1,4 +1,4 @@
-package cmd_gitlab
+package gitlab
 
 import (
 	"github.com/sparkfabrik/sparkci/pkg/gitlab"

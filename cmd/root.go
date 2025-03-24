@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	cmd_gitlab "github.com/sparkfabrik/sparkci/cmd/gitlab"
-	cmd_gwif "github.com/sparkfabrik/sparkci/cmd/gwif"
+	"github.com/sparkfabrik/sparkci/cmd/gitlab"
+	"github.com/sparkfabrik/sparkci/cmd/gwif"
 	"github.com/sparkfabrik/sparkci/pkg/utils"
 	"github.com/spf13/cobra"
 )
@@ -36,6 +36,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(cmd_gitlab.GitlabCommand)
-	rootCmd.AddCommand(cmd_gwif.GwifCommand)
+	rootCmd.AddCommand(gitlab.GitlabCommand)
+	rootCmd.AddCommand(gwif.GwifCommand)
 }

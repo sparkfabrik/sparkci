@@ -1,28 +1,27 @@
-package cmd_gwif
+package gwif
 
 import (
 	"fmt"
 
 	"github.com/sparkfabrik/sparkci/pkg/gwif"
-	"github.com/sparkfabrik/sparkci/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
 var getSaTokenCmd = &cobra.Command{
-	Use:   "get-gwif-sa-token",
-	Short: "Get Google Workload Identify token",
-	Long:  `Get Google Workload Identity Federation token for the service account.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Use:           "print-sa-token",
+	Short:         "Print Google Workload Identify token",
+	Long:          `Print Google Workload Identity Federation token for the service account.`,
+	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		config, err := gwif.NewWorkloadIdentityConfig()
 		if err != nil {
-			utils.Error(err.Error())
-			return
+			return err
 		}
 		token, err := gwif.GetGCPToken(config)
 		if err != nil {
-			utils.Error(err.Error())
-			return
+			return err
 		}
 		fmt.Println(token.AccessToken)
+		return nil
 	},
 }

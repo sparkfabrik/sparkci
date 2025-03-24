@@ -1,4 +1,4 @@
-package cmd_gwif
+package gwif
 
 import (
 	"fmt"

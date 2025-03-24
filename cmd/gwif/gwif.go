@@ -1,4 +1,4 @@
-package cmd_gwif
+package gwif
 
 import (
 	"github.com/spf13/cobra"
