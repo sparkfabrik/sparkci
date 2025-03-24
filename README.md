@@ -148,6 +148,10 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 As this is an experimental project, contributions are welcome but may be subject to significant changes.
 
+## Coding conventions
+
+- https://github.com/spf13/cobra/blob/main/site/content/user_guide.md
+
 ### Development Workflow
 
 This project follows a simplified GitHub Flow workflow:
