@@ -309,19 +309,20 @@ func GcloudExec(args []string) (output string, err error) {
 	cmd := exec.Command("gcloud", args...)
 	wifConfig, err := NewWorkloadIdentityConfig()
 
-	if err != nil {
+	// Set the token if we have a WIF config.
+	if err == nil && wifConfig != nil {
 		gwifToken, err := GetGCPToken(wifConfig)
-		if err == nil && gwifToken.AccessToken != "" {
+		if err == nil && gwifToken != nil && gwifToken.AccessToken != "" {
 			utils.Debug("Using WIF token for gcloud command")
 			cmd.Env = append(os.Environ(), "CLOUDSDK_AUTH_ACCESS_TOKEN="+gwifToken.AccessToken)
-			fmt.Println(cmd.Env)
 		}
 	}
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("%s: %w", stderr.String(), err)
+		return "", fmt.Errorf("%s", stderr.String())
 	}
 	return stdout.String(), nil
+
 }
