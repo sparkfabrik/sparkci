@@ -14,7 +14,7 @@ var GwifCommand = &cobra.Command{
 }
 
 func init() {
-	GwifCommand.AddCommand(execCmd)
-	GwifCommand.AddCommand(printJwtCmd)
+	GwifCommand.AddCommand(gcloudExec)
+	GwifCommand.AddCommand(printGitlabJwtCmd)
 	GwifCommand.AddCommand(getSaTokenCmd)
 }
