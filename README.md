@@ -28,19 +28,19 @@ Download the latest release from the [releases page](https://github.com/sparkfab
 
 ```bash
 # Linux (amd64)
-curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_linux_amd64.tar.gz | tar xz
+curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_0.0.0-dev_linux_amd64.tar.gz | tar xz
 sudo mv sparkci /usr/local/bin/
 
 # Linux (arm64)
-curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_linux_arm64.tar.gz | tar xz
+curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_0.0.0-dev_linux_arm64.tar.gz | tar xz
 sudo mv sparkci /usr/local/bin/
 
 # macOS (Intel)
-curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_darwin_amd64.tar.gz | tar xz
+curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_0.0.0-dev_darwin_amd64.tar.gz | tar xz
 sudo mv sparkci /usr/local/bin/
 
 # macOS (Apple Silicon)
-curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_darwin_arm64.tar.gz | tar xz
+curl -L https://github.com/sparkfabrik/sparkci/releases/download/latest/sparkci_0.0.0-dev_darwin_arm64.tar.gz | tar xz
 sudo mv sparkci /usr/local/bin/
 ```
 
