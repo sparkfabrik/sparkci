@@ -77,6 +77,16 @@ type WorkloadIdentityConfig struct {
 	GitLabOIDCToken GitlabOidc
 }
 
+func (gwif *WorkloadIdentityConfig) SafeToMap() map[string]string {
+	safeConfig := map[string]string{
+		"project_number":  gwif.ProjectNumber,
+		"pool_id":         gwif.PoolID,
+		"provider_id":     gwif.ProviderID,
+		"service_account": gwif.ServiceAccount,
+	}
+	return safeConfig
+}
+
 func (jwt *GitlabOidcJwt) JsonPrettyPrint() (string, error) {
 	jsonBytes, err := json.MarshalIndent(jwt, "", "  ")
 	if err != nil {
@@ -155,7 +165,7 @@ func NewWorkloadIdentityConfig() (*WorkloadIdentityConfig, error) {
 
 	return &WorkloadIdentityConfig{
 		ProjectNumber:   os.Getenv("GCP_WIF_PROJECT_ID"),
-		PoolID:          os.Getenv("GCP_WIF_POOL_ID"),
+		PoolID:          os.Getenv("GCP_WIF_POOL"),
 		ProviderID:      os.Getenv("GCP_WIF_PROVIDER"),
 		ServiceAccount:  os.Getenv("GCP_WIF_SERVICE_ACCOUNT_EMAIL"),
 		GitLabOIDCToken: *oidc,
@@ -187,7 +197,7 @@ func checkEnvVars() error {
 	var envVars = []string{
 		"GITLAB_OIDC_TOKEN",
 		"GCP_WIF_PROJECT_ID",
-		"GCP_WIF_POOL_ID",
+		"GCP_WIF_POOL",
 		"GCP_WIF_PROVIDER",
 		"GCP_WIF_SERVICE_ACCOUNT_EMAIL",
 	}

@@ -266,3 +266,157 @@ func TestPrintMapWithMock(t *testing.T) {
 	assert.Equal(t, "Value1", key1Value)
 	assert.Equal(t, "Value2", longerKeyValue)
 }
+func TestPrintFormattedVars(t *testing.T) {
+	tests := []struct {
+		name     string
+		title    string
+		vars     map[string]string
+		expected []string
+	}{
+		{
+			name:  "No title, single variable",
+			title: "",
+			vars: map[string]string{
+				"Key": "Value",
+			},
+			expected: []string{
+				"Key:  \x1b[1mValue",
+			},
+		},
+		{
+			name:  "With title, single variable",
+			title: "Header",
+			vars: map[string]string{
+				"Key": "Value",
+			},
+			expected: []string{
+				"\033[1mHeader\033[0m",
+				"Key:  \x1b[1mValue",
+			},
+		},
+		{
+			name:  "Multiple variables",
+			title: "Variables",
+			vars: map[string]string{
+				"Key1": "Value1",
+				"Key2": "Value2",
+			},
+			expected: []string{
+				"\033[1mVariables\033[0m",
+				"Key1:  \x1b[1mValue1",
+				"Key2:  \x1b[1mValue2",
+			},
+		},
+		{
+			name:  "Empty variables",
+			title: "Empty",
+			vars:  map[string]string{},
+			expected: []string{
+				"\033[1mEmpty\033[0m",
+			},
+		},
+		{
+			name:  "No title, multiple variables",
+			title: "",
+			vars: map[string]string{
+				"Short":     "Value1",
+				"LongerKey": "Value2",
+			},
+			expected: []string{
+				"Short:      \x1b[1mValue1\x1b[0m\n",
+				"LongerKey:  \x1b[1mValue2\x1b[0m\n",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			oldStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			// Call PrintFormattedVars
+			PrintFormattedVars(tt.title, tt.vars)
+
+			// Restore stdout and read captured output
+			w.Close()
+			os.Stdout = oldStdout
+			var buf bytes.Buffer
+			io.Copy(&buf, r)
+			output := buf.String()
+
+			// Verify output
+			for _, expectedLine := range tt.expected {
+				assert.Contains(t, output, expectedLine)
+			}
+		})
+	}
+}
+
+func TestPrintVarGroup(t *testing.T) {
+	tests := []struct {
+		name     string
+		title    string
+		vars     map[string]string
+		expected []string
+	}{
+		{
+			name:  "Group with title",
+			title: "GroupTitle",
+			vars: map[string]string{
+				"Key1": "Value1",
+				"Key2": "Value2",
+			},
+			expected: []string{
+				"\033[1mGroupTitle\033[0m",
+				"Key1:  \x1b[1mValue1",
+				"Key2:  \x1b[1mValue2",
+			},
+		},
+		{
+			name:  "Group without title",
+			title: "",
+			vars: map[string]string{
+				"Key1": "Value1",
+				"Key2": "Value2",
+			},
+			expected: []string{
+				"Key1:  \x1b[1mValue1",
+				"Key2:  \x1b[1mValue2",
+			},
+		},
+		{
+			name:  "Empty group",
+			title: "EmptyGroup",
+			vars:  map[string]string{},
+			expected: []string{
+				"\033[1mEmptyGroup\033[0m",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			oldStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			// Call PrintVarGroup
+			PrintVarGroup(tt.title, tt.vars)
+
+			// Restore stdout and read captured output
+			w.Close()
+			os.Stdout = oldStdout
+			var buf bytes.Buffer
+			io.Copy(&buf, r)
+			output := buf.String()
+
+			// Verify output
+			for _, expectedLine := range tt.expected {
+				assert.Contains(t, output, expectedLine)
+			}
+		})
+	}
+}

@@ -17,4 +17,6 @@ func init() {
 	GwifCommand.AddCommand(gcloudExec)
 	GwifCommand.AddCommand(printGitlabJwtCmd)
 	GwifCommand.AddCommand(getSaTokenCmd)
+	GwifCommand.AddCommand(isConfiguredCmd)
+	GwifCommand.AddCommand(printVarsCmd)
 }
