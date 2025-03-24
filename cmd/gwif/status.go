@@ -66,6 +66,6 @@ sparkci gwif print-vars`,
 }
 
 func init() {
-	isConfiguredCmd.Flags().BoolVarP(&print, "print", "p", false, "Print configuration")
-	isConfiguredCmd.Flags().BoolVarP(&silent, "silent", "s", true, "Silent mode (no output)")
+	statusCmd.Flags().BoolVarP(&print, "print", "p", false, "Print configuration")
+	statusCmd.Flags().BoolVarP(&silent, "silent", "s", true, "Silent mode (no output)")
 }
