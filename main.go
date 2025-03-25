@@ -5,7 +5,6 @@ import (
 )
 
 var (
-	// Version information - will be set by goreleaser
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"

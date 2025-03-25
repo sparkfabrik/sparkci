@@ -7,8 +7,8 @@ import (
 
 var format string
 
-var printEnv = &cobra.Command{
-	Use:           "print-env",
+var printEnvs = &cobra.Command{
+	Use:           "print-envs",
 	Short:         "Print GitLab CI environment information",
 	Long:          `Display information about the current GitLab CI environment.`,
 	SilenceErrors: true,
@@ -21,5 +21,5 @@ var printEnv = &cobra.Command{
 }
 
 func init() {
-	printEnv.Flags().StringVarP(&format, "format", "f", "text", "Output format (text, json, yaml)")
+	printEnvs.Flags().StringVarP(&format, "format", "f", "text", "Output format (text, json, yaml)")
 }

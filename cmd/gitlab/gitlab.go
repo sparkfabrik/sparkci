@@ -14,5 +14,5 @@ var GitlabCommand = &cobra.Command{
 }
 
 func init() {
-	GitlabCommand.AddCommand(printEnv)
+	GitlabCommand.AddCommand(printEnvs)
 }

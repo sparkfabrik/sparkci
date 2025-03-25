@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/sparkfabrik/sparkci/cmd/gitlab"
 	"github.com/sparkfabrik/sparkci/cmd/gwif"
 	"github.com/sparkfabrik/sparkci/pkg/utils"
@@ -23,8 +25,7 @@ providing various utilities that can be run both in CI/CD pipelines and locally.
 }
 
 func SetVersionInfo(version, commit, date, builtBy string) {
-	rootCmd.Version = version
-	rootCmd.Short += " (commit: " + commit + ", built: " + date + ", builder: " + builtBy + ")"
+	rootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s - built by %s)", version, date, commit, builtBy)
 }
 
 func Execute() {
