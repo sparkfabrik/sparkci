@@ -11,6 +11,7 @@ var GwifCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
+	Args: cobra.NoArgs,
 }
 
 func init() {
