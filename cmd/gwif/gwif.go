@@ -20,4 +20,5 @@ func init() {
 	GwifCommand.AddCommand(getSaTokenCmd)
 	GwifCommand.AddCommand(statusCmd)
 	GwifCommand.AddCommand(printVarsCmd)
+	GwifCommand.AddCommand(gcloudAuth)
 }
