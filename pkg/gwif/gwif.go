@@ -341,19 +341,13 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 	}
 
 	// generate an empty temporary file for the OIDC token
-	tmpFile, err := os.CreateTemp("", "gcloud_auth_*.json")
+	tmpFile, err := utils.WriteTempFile("oidc_token_*.jwt", oidcToken)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary file: %w", err)
 	}
-	if _, err := tmpFile.WriteString(oidcToken); err != nil {
-		return "", fmt.Errorf("failed to write token to temporary file: %w", err)
-	}
-	if err := tmpFile.Close(); err != nil {
-		return "", fmt.Errorf("failed to close temporary file: %w", err)
-	}
 
 	// Create a second temporary file for the credential config
-	credFile, err := os.CreateTemp("", "gcloud_cred_*.json")
+	credFile, err := utils.WriteTempFile("gcloud_cred_*.json", "")
 	if err != nil {
 		return "", fmt.Errorf("failed to create credential file: %w", err)
 	}
