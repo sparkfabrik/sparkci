@@ -345,7 +345,6 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name())
 	if _, err := tmpFile.WriteString(oidcToken); err != nil {
 		return "", fmt.Errorf("failed to write token to temporary file: %w", err)
 	}
