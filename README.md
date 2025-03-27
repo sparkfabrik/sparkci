@@ -213,7 +213,18 @@ As this is an experimental project, contributions are welcome but may be subject
 
 ## Coding conventions
 
-- https://github.com/spf13/cobra/blob/main/site/content/user_guide.md
+SparkCI follows these Go coding patterns:
+
+- Command structure follows [Cobra](https://github.com/spf13/cobra/blob/main/site/content/user_guide.md) best practices
+- Main commands are organized in their own package under `cmd/` (e.g., `cmd/gitlab/`)
+- Main command files export a PascalCase command variable (e.g., `GitlabCommand`) for imports
+- Subcommands are defined in separate files with camelCase variables (e.g., `printEnv`)
+- Use `RunE` instead of `Run` when the command can return errors
+- Command flags are defined in each command's `init()` function
+- Core functionality is implemented in packages under `pkg/`
+- Use project logger utilities: `utils.Info()`, `utils.Debug()`, `utils.Warn()`, `utils.Error()`, `utils.Fatal()`
+- Each command should be in its own file with a matching filename
+- Main commands should provide a default `Run` function that calls `cmd.Help()`
 
 ### Development Workflow
 
@@ -222,6 +233,9 @@ This project follows a simplified GitHub Flow workflow:
 - `main` branch is the primary branch for both development and releases
 - Feature branches should be created from and merged back into `main` via pull requests
 - All work should be done in feature branches, not directly on `main`
+- Branch names should follow the pattern: `feature/description`, `bugfix/description`, or `docs/description`
+- Commit messages should be clear and descriptive
+- Pull requests should include adequate test coverage for new features
 
 Development builds are automatically generated from the `main` branch on each push.
 Stable releases are created by tagging the `main` branch with a version tag (e.g., `v0.1.0`).
@@ -231,7 +245,24 @@ Stable releases are created by tagging the `main` branch with a version tag (e.g
 Run the test suite before submitting a pull request:
 
 ```bash
+# Run all tests
 make test
+
+# Run tests with coverage report
+make test-coverage
+
+# Run tests for a specific package
+go test ./pkg/gitlab/...
+
+# Run a specific test
+go test ./pkg/gitlab/... -run TestFunctionName
+```
+
+For integration tests that require external services, use the appropriate flags:
+
+```bash
+# Run integration tests (requires credentials)
+go test ./... -tags=integration
 ```
 
 ## Maintainers

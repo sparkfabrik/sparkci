@@ -34,7 +34,7 @@ func Execute() {
 	utils.InitLogging()
 
 	if err := rootCmd.Execute(); err != nil {
-		utils.Fatal(err.Error())
+		utils.Fatal(fmt.Sprintf("error: %s", err.Error()))
 	}
 }
 

@@ -140,49 +140,24 @@ func (l *Logger) log(level LogLevel, msg string, args ...interface{}) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	// Format the timestamp or skip it if format is empty (useful for testing)
-	var timePrefix string
-	if l.timeFormat != "" {
-		timestamp := time.Now().Format(l.timeFormat)
-		timePrefix = fmt.Sprintf("[%s] ", timestamp)
-	}
-
-	levelStr := level.String()
-
-	if l.useColor {
-		levelStr = fmt.Sprintf("%s%s\033[0m", level.Color(), levelStr)
-	}
-
 	// Format args if provided
 	message := msg
 	if len(args) > 0 {
 		message = fmt.Sprintf(msg, args...)
 	}
 
-	// Split multi-line messages and maintain indentation
+	// Split multi-line messages
 	lines := strings.Split(message, "\n")
 	firstLine := lines[0]
 
-	fmt.Fprintf(l.out, "%s%s [%s] %s\n", timePrefix, l.prefix, levelStr, firstLine)
+	// Print only the message without any prefix for all log levels
+	fmt.Fprintf(l.out, "%s\n", firstLine)
 
-	// Print subsequent lines with proper indentation
+	// For multi-line messages, print subsequent lines without indentation
 	if len(lines) > 1 {
-		// Calculate indent based on first line
-		var indent string
-		if l.timeFormat != "" {
-			indent = fmt.Sprintf("%s %s %s ",
-				strings.Repeat(" ", len(time.Now().Format(l.timeFormat))+2), // +2 for brackets
-				strings.Repeat(" ", len(l.prefix)),
-				strings.Repeat(" ", len(level.String())+2)) // +2 for brackets
-		} else {
-			indent = fmt.Sprintf("%s %s ",
-				strings.Repeat(" ", len(l.prefix)),
-				strings.Repeat(" ", len(level.String())+2))
-		}
-
 		for _, line := range lines[1:] {
 			if line != "" {
-				fmt.Fprintf(l.out, "%s%s\n", indent, line)
+				fmt.Fprintf(l.out, "%s\n", line)
 			}
 		}
 	}
@@ -208,10 +183,13 @@ func (l *Logger) Error(msg string, args ...interface{}) {
 	l.log(LogLevelError, msg, args...)
 }
 
+// Variable to allow mocking os.Exit in tests
+var osExit = os.Exit
+
 // Fatal logs a fatal message and exits
 func (l *Logger) Fatal(msg string, args ...interface{}) {
 	l.log(LogLevelFatal, msg, args...)
-	os.Exit(1)
+	osExit(1)
 }
 
 // WithFields returns a new logger with the given fields attached
@@ -259,6 +237,7 @@ func Error(msg string, args ...interface{}) {
 // Fatal logs a fatal message and exits using the default logger
 func Fatal(msg string, args ...interface{}) {
 	DefaultLogger.Fatal(msg, args...)
+	os.Exit(1)
 }
 
 // SetLogLevel sets the minimum log level for the default logger
