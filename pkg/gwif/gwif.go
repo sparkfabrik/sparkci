@@ -335,25 +335,25 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 
 	// remove //iam.googleapis.com/ from audience.
 	audience = strings.Replace(audience, "//iam.googleapis.com/", "", 1)
-	oidc_token := wifConfig.GitLabOIDCToken.FromEnv
-	if oidc_token == "" {
+	oidcToken := wifConfig.GitLabOIDCToken.FromEnv
+	if oidcToken == "" {
 		return "", fmt.Errorf("GITLAB_OIDC_TOKEN is not set or empty")
 	}
 
-	// generate an empty temporary file.
+	// generate an empty temporary file for the OIDC token
 	tmpFile, err := os.CreateTemp("", "gcloud_auth_*.json")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary file: %w", err)
 	}
 	defer os.Remove(tmpFile.Name())
-	if _, err := tmpFile.WriteString(oidc_token); err != nil {
+	if _, err := tmpFile.WriteString(oidcToken); err != nil {
 		return "", fmt.Errorf("failed to write token to temporary file: %w", err)
 	}
 	if err := tmpFile.Close(); err != nil {
 		return "", fmt.Errorf("failed to close temporary file: %w", err)
 	}
 
-	// Create a second temporary file for the output
+	// Create a second temporary file for the credential config
 	credFile, err := os.CreateTemp("", "gcloud_cred_*.json")
 	if err != nil {
 		return "", fmt.Errorf("failed to create credential file: %w", err)
@@ -362,13 +362,16 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 
 	// Create cred config command.
 	_, err = shellExecutor.Run("gcloud", "iam", "workload-identity-pools", "create-cred-config", wifConfig.PoolID,
-		wifConfig.ServiceAccount, "--output-file", credFile.Name(), "--credential-source-file", tmpFile.Name(), "--audience", audience)
+		"--service-account", wifConfig.ServiceAccount,
+		"--output-file", credFile.Name(),
+		"--credential-source-file", tmpFile.Name(),
+		"--audience", audience)
 	if err != nil {
 		return "", fmt.Errorf("failed to create cred config: %w", err)
 	}
 
-	// Now login using the temporary file.
-	out, err := shellExecutor.Run("gcloud", "auth", "login", "--cred-file", tmpFile.Name())
+	// Now login using the credential file
+	out, err := shellExecutor.Run("gcloud", "auth", "login", "--cred-file", credFile.Name())
 	if err != nil {
 		return "", fmt.Errorf("failed to login: %w", err)
 	}
