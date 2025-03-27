@@ -7,31 +7,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var gcloudExec = &cobra.Command{
-	Use:   "gcloud-exec -- [gcloud commands and arguments]",
-	Short: "Execute a gcloud command with WIF authentication",
-	Long: `Execute a gcloud command with Google Cloud Workload Identity Federation authentication.
-The -- separator MUST be used to separate sparkci command from gcloud arguments.
+func NewGcloudExecCommand() *cobra.Command {
+	var gcloudExec = &cobra.Command{
+		Use:   "gcloud-exec -- [gcloud commands and arguments]",
+		Short: "Execute a gcloud command with WIF authentication",
+		Long: `Execute a gcloud command with Google Cloud Workload Identity Federation authentication.
+	The -- separator MUST be used to separate sparkci command from gcloud arguments.
 
-Example:
-  sparkci gwif gcloud-exec -- secrets versions access latest --project="my-project"`,
-	// Don't validate args so we can handle them ourselves
-	DisableFlagParsing: true,
-	SilenceErrors:      true,
-	SilenceUsage:       true,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		gcloudArgs, err := validateArgs(args)
-		if err != nil {
-			return cmd.Help()
-		}
+	Example:
+	  sparkci gwif gcloud-exec -- secrets versions access latest --project="my-project"`,
+		// Don't validate args so we can handle them ourselves
+		DisableFlagParsing: true,
+		SilenceErrors:      true,
+		SilenceUsage:       true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gcloudArgs, err := validateArgs(args)
+			if err != nil {
+				return cmd.Help()
+			}
 
-		output, err := gwif.GcloudExec(gcloudArgs)
-		if err != nil {
-			return err
-		}
-		fmt.Println(output)
-		return nil
-	},
+			output, err := gwif.GcloudExec(gcloudArgs)
+			if err != nil {
+				return err
+			}
+			fmt.Println(output)
+			return nil
+		},
+	}
+	return gcloudExec
+
 }
 
 func validateArgs(args []string) ([]string, error) {
