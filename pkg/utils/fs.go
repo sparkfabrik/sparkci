@@ -9,9 +9,7 @@ func WriteTempFile(name string, data string) (*os.File, error) {
 	if name == "" {
 		name = "tempfile"
 	}
-	if data == "" {
-		return nil, fmt.Errorf("empty string provided")
-	}
+
 	tmpFile, err := os.CreateTemp("", name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)

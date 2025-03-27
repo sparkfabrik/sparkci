@@ -361,15 +361,16 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 		return "", fmt.Errorf("failed to create cred config: %w", err)
 	}
 
+	// Clean up temporary files.
+	defer os.Remove(tmpFile.Name())
+	defer os.Remove(credFile.Name())
+
 	// Now login using the credential file
 	out, err := shellExecutor.Run("gcloud", "auth", "login", "--cred-file", credFile.Name())
 	if err != nil {
 		return "", fmt.Errorf("failed to login: %w", err)
 	}
 
-	// Clean up temporary files.
-	defer os.Remove(tmpFile.Name())
-	defer os.Remove(credFile.Name())
 	return out, nil
 }
 
