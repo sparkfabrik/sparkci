@@ -345,12 +345,14 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary file: %w", err)
 	}
+	tmpFile.Close()
 
 	// Create a second temporary file for the credential config
 	credFile, err := utils.WriteTempFile("gcloud_cred_*.json", "")
 	if err != nil {
 		return "", fmt.Errorf("failed to create credential file: %w", err)
 	}
+	credFile.Close()
 
 	// Create cred config command.
 	_, err = shellExecutor.Run("gcloud", "iam", "workload-identity-pools", "create-cred-config", audience,
