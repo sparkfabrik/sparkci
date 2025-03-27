@@ -15,9 +15,16 @@ var GwifCommand = &cobra.Command{
 }
 
 func init() {
-	GwifCommand.AddCommand(gcloudExec)
-	GwifCommand.AddCommand(printGitlabJwtCmd)
-	GwifCommand.AddCommand(getSaTokenCmd)
+	gcloudExecCmd := NewGcloudExecCommand()
+	gcloudAuthCmd := NewGcloudAuthCommand(nil)
+	printGitlabJwtCmd := NewPrintGitlabJwtCommand()
+	printSaTokenCmd := NewPrintSaTokenCommand()
+	statusCmd := NewStatusCommand()
+	printVarsCmd := NewPrintVarsCommand()
 	GwifCommand.AddCommand(statusCmd)
 	GwifCommand.AddCommand(printVarsCmd)
+	GwifCommand.AddCommand(printSaTokenCmd)
+	GwifCommand.AddCommand(gcloudExecCmd)
+	GwifCommand.AddCommand(gcloudAuthCmd)
+	GwifCommand.AddCommand(printGitlabJwtCmd)
 }

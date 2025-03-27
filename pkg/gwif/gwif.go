@@ -74,7 +74,7 @@ type WorkloadIdentityConfig struct {
 	PoolID          string
 	ProviderID      string
 	ServiceAccount  string
-	GitLabOIDCToken GitlabOidc
+	GitLabOIDCToken *GitlabOidc
 }
 
 func (gwif *WorkloadIdentityConfig) SafeToMap() map[string]string {
@@ -168,7 +168,7 @@ func NewWorkloadIdentityConfig() (*WorkloadIdentityConfig, error) {
 		PoolID:          os.Getenv("GCP_WIF_POOL"),
 		ProviderID:      os.Getenv("GCP_WIF_PROVIDER"),
 		ServiceAccount:  os.Getenv("GCP_WIF_SERVICE_ACCOUNT_EMAIL"),
-		GitLabOIDCToken: *oidc,
+		GitLabOIDCToken: oidc,
 	}, nil
 }
 
@@ -209,6 +209,11 @@ func checkEnvVars() error {
 	return nil
 }
 
+func (config *WorkloadIdentityConfig) getAudience() string {
+	return fmt.Sprintf("//iam.googleapis.com/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s",
+		config.ProjectNumber, config.PoolID, config.ProviderID)
+}
+
 // GetFederatedToken exchanges a GitLab OIDC token for a GCP federated token
 func GetFederatedToken(ctx context.Context, config *WorkloadIdentityConfig) (string, error) {
 	// 1. Initialize the STS (Security Token Service) client
@@ -218,8 +223,7 @@ func GetFederatedToken(ctx context.Context, config *WorkloadIdentityConfig) (str
 	}
 
 	// 2. Create the resource name for the provider pool
-	audience := fmt.Sprintf("//iam.googleapis.com/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s",
-		config.ProjectNumber, config.PoolID, config.ProviderID)
+	audience := config.getAudience()
 
 	// 3. Exchange the GitLab OIDC token for a GCP federated token
 	exchangeReq := &sts.GoogleIdentityStsV1ExchangeTokenRequest{
@@ -324,5 +328,53 @@ func GcloudExec(args []string) (output string, err error) {
 		return "", fmt.Errorf("%s", stderr.String())
 	}
 	return stdout.String(), nil
+}
 
+func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig) (string, error) {
+	audience := wifConfig.getAudience()
+
+	// remove //iam.googleapis.com/ from audience.
+	audience = strings.Replace(audience, "//iam.googleapis.com/", "", 1)
+	oidcToken := wifConfig.GitLabOIDCToken.FromEnv
+	if oidcToken == "" {
+		return "", fmt.Errorf("GITLAB_OIDC_TOKEN is not set or empty")
+	}
+
+	// generate an empty temporary file for the OIDC token
+	tmpFile, err := utils.WriteTempFile("oidc_token_*.jwt", oidcToken)
+	if err != nil {
+		return "", fmt.Errorf("failed to create temporary file: %w", err)
+	}
+	tmpFile.Close()
+
+	// Create a second temporary file for the credential config
+	credFile, err := utils.WriteTempFile("gcloud_cred_*.json", "")
+	if err != nil {
+		return "", fmt.Errorf("failed to create credential file: %w", err)
+	}
+	credFile.Close()
+
+	// Create cred config command.
+	_, err = shellExecutor.Run("gcloud", "iam", "workload-identity-pools", "create-cred-config", audience,
+		"--service-account", wifConfig.ServiceAccount,
+		"--output-file", credFile.Name(),
+		"--credential-source-file", tmpFile.Name())
+	if err != nil {
+		return "", fmt.Errorf("failed to create cred config: %w", err)
+	}
+
+	// Now login using the credential file
+	out, err := shellExecutor.Run("gcloud", "auth", "login", "--cred-file", credFile.Name())
+	if err != nil {
+		return "", fmt.Errorf("failed to login: %w", err)
+	}
+	return out, nil
+}
+
+func CheckGcloudInstalled(shellExecutor utils.Executor) (bool, error) {
+	_, err := shellExecutor.Run("gcloud", "--version")
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

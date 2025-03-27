@@ -373,7 +373,7 @@ func TestGetFederatedToken(t *testing.T) {
 		PoolID:         "test-pool",
 		ProviderID:     "gitlab-provider",
 		ServiceAccount: "test-sa@project-id.iam.gserviceaccount.com",
-		GitLabOIDCToken: GitlabOidc{
+		GitLabOIDCToken: &GitlabOidc{
 			FromEnv: testToken,
 		},
 	}
@@ -438,7 +438,7 @@ func TestGetGCPToken_Structure(t *testing.T) {
 		PoolID:         "test-pool",
 		ProviderID:     "gitlab-provider",
 		ServiceAccount: "test-sa@project-id.iam.gserviceaccount.com",
-		GitLabOIDCToken: GitlabOidc{
+		GitLabOIDCToken: &GitlabOidc{
 			FromEnv: testToken,
 		},
 	}

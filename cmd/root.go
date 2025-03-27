@@ -22,6 +22,8 @@ var rootCmd = &cobra.Command{
 	Short: "SparkCI - A CLI tool for GitLab CI operations",
 	Long: `SparkCI is a CLI tool designed to enhance GitLab CI workflows,
 providing various utilities that can be run both in CI/CD pipelines and locally.`,
+	SilenceErrors: true,
+	SilenceUsage:  true,
 }
 
 func SetVersionInfo(version, commit, date, builtBy string) {
