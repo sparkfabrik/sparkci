@@ -74,7 +74,7 @@ type WorkloadIdentityConfig struct {
 	PoolID          string
 	ProviderID      string
 	ServiceAccount  string
-	GitLabOIDCToken GitlabOidc
+	GitLabOIDCToken *GitlabOidc
 }
 
 func (gwif *WorkloadIdentityConfig) SafeToMap() map[string]string {
@@ -168,7 +168,7 @@ func NewWorkloadIdentityConfig() (*WorkloadIdentityConfig, error) {
 		PoolID:          os.Getenv("GCP_WIF_POOL"),
 		ProviderID:      os.Getenv("GCP_WIF_PROVIDER"),
 		ServiceAccount:  os.Getenv("GCP_WIF_SERVICE_ACCOUNT_EMAIL"),
-		GitLabOIDCToken: *oidc,
+		GitLabOIDCToken: oidc,
 	}, nil
 }
 

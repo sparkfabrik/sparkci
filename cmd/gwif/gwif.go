@@ -16,7 +16,7 @@ var GwifCommand = &cobra.Command{
 
 func init() {
 	gcloudExecCmd := NewGcloudExecCommand()
-	gcloudAuthCmd := NewGcloudAuthCommand()
+	gcloudAuthCmd := NewGcloudAuthCommand(nil)
 	printGitlabJwtCmd := NewPrintGitlabJwtCommand()
 	printSaTokenCmd := NewPrintSaTokenCommand()
 	statusCmd := NewStatusCommand()
