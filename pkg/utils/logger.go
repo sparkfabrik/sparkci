@@ -237,7 +237,6 @@ func Error(msg string, args ...interface{}) {
 // Fatal logs a fatal message and exits using the default logger
 func Fatal(msg string, args ...interface{}) {
 	DefaultLogger.Fatal(msg, args...)
-	os.Exit(1)
 }
 
 // SetLogLevel sets the minimum log level for the default logger
