@@ -358,7 +358,6 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 	if err != nil {
 		return "", fmt.Errorf("failed to create credential file: %w", err)
 	}
-	defer os.Remove(credFile.Name())
 
 	// Create cred config command.
 	_, err = shellExecutor.Run("gcloud", "iam", "workload-identity-pools", "create-cred-config", audience,
