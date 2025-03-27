@@ -16,9 +16,9 @@ func WriteTempFile(name string, data string) (*os.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer tmpFile.Close()
 
 	if _, err := tmpFile.WriteString(data); err != nil {
+		tmpFile.Close()
 		return nil, fmt.Errorf("failed to write to temp file: %w", err)
 	}
 

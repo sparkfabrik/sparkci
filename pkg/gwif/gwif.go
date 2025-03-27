@@ -366,6 +366,10 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 	if err != nil {
 		return "", fmt.Errorf("failed to login: %w", err)
 	}
+
+	// Clean up temporary files.
+	defer os.Remove(tmpFile.Name())
+	defer os.Remove(credFile.Name())
 	return out, nil
 }
 
