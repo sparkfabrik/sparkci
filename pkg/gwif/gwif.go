@@ -368,7 +368,6 @@ func GcloudAuth(shellExecutor utils.Executor, wifConfig *WorkloadIdentityConfig)
 	if err != nil {
 		return "", fmt.Errorf("failed to login: %w", err)
 	}
-
 	return out, nil
 }
 
