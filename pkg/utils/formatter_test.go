@@ -86,3 +86,48 @@ func TestGitLabSectionStart(t *testing.T) {
 		assert.Contains(t, parts[2], title+"[collapsed=true]")
 	})
 }
+
+func TestGitLabPrintBanner(t *testing.T) {
+	t.Run("With Text", func(t *testing.T) {
+		text := "Hello World"
+
+		output := captureOutput(func() {
+			GitLabPrintBanner(text)
+		})
+
+		border := "+" + strings.Repeat("-", len(text)+2) + "+"
+		expected := border + "\n| " + text + " |\n" + border + "\n"
+		assert.Equal(t, expected, output)
+	})
+
+	t.Run("With Empty Text", func(t *testing.T) {
+		output := captureOutput(func() {
+			GitLabPrintBanner("")
+		})
+
+		// Should not print anything if text is empty
+		assert.Equal(t, "", output)
+	})
+
+	t.Run("Banner Format", func(t *testing.T) {
+		text := "Test Banner"
+
+		output := captureOutput(func() {
+			GitLabPrintBanner(text)
+		})
+
+		lines := strings.Split(strings.TrimSpace(output), "\n")
+
+		// Verify we have exactly 3 lines
+		assert.Equal(t, 3, len(lines), "Banner should have 3 lines")
+
+		// First and last line should be identical borders with correct length
+		expectedBorder := "+" + strings.Repeat("-", len(text)+2) + "+"
+		assert.Equal(t, expectedBorder, lines[0], "First line should be a border")
+		assert.Equal(t, expectedBorder, lines[2], "Last line should be a border")
+
+		// Middle line should contain the text with proper formatting
+		expectedMiddle := "| " + text + " |"
+		assert.Equal(t, expectedMiddle, lines[1], "Middle line should contain the text with proper padding")
+	})
+}

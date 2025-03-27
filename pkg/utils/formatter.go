@@ -26,9 +26,11 @@ func GitLabSectionEnd(sectionTitle string) {
 	fmt.Printf("section_end:%d:%s\r\033[0K\n", timestamp, sectionTitle)
 }
 
-// GitLabPrintBanner prints a banner with the given text in GitLab CI output
 func GitLabPrintBanner(text string) {
 	if text != "" {
-		fmt.Println("+" + strings.Repeat("-", len(text)+2) + "+")
+		border := "+" + strings.Repeat("-", len(text)+2) + "+"
+		fmt.Println(border)
+		fmt.Println("| " + text + " |")
+		fmt.Println(border)
 	}
 }
