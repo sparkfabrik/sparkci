@@ -2,7 +2,6 @@ package gwif
 
 import (
 	formatCmd "github.com/sparkfabrik/sparkci/cmd/format"
-	"github.com/sparkfabrik/sparkci/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -49,7 +48,6 @@ and authenticating with Google Cloud.`,
 			}
 
 			// Step 6: Display the end banner
-			utils.Info("Displaying end banner...")
 			bannerCmd.SetArgs([]string{"--text", "END GCP WIF CONFIGURATION"})
 			if err := bannerCmd.Execute(); err != nil {
 				return err
