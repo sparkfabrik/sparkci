@@ -156,9 +156,7 @@ func (l *Logger) log(level LogLevel, msg string, args ...interface{}) {
 	// For multi-line messages, print subsequent lines without indentation
 	if len(lines) > 1 {
 		for _, line := range lines[1:] {
-			if line != "" {
-				fmt.Fprintf(l.out, "%s\n", line)
-			}
+			fmt.Fprintf(l.out, "%s\n", line)
 		}
 	}
 }
