@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sparkfabrik/sparkci/cmd/format"
 	"github.com/sparkfabrik/sparkci/cmd/gitlab"
@@ -35,7 +36,10 @@ func Execute() {
 	utils.InitLogging()
 
 	if err := rootCmd.Execute(); err != nil {
-		utils.Fatal(fmt.Sprintf("error: %s", err.Error()))
+		if len(err.Error()) > 0 {
+			utils.Error("%v", err)
+		}
+		os.Exit(1)
 	}
 }
 
