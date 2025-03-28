@@ -22,8 +22,8 @@ func newFormatCommand() *cobra.Command {
 	}
 
 	// Add subcommands
-	cmd.AddCommand(newSectionCommand())
-	cmd.AddCommand(newBannerCommand())
+	cmd.AddCommand(NewSectionCommand())
+	cmd.AddCommand(NewBannerCommand())
 
 	return cmd
 }

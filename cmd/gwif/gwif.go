@@ -21,10 +21,14 @@ func init() {
 	printSaTokenCmd := NewPrintSaTokenCommand()
 	statusCmd := NewStatusCommand()
 	printVarsCmd := NewPrintVarsCommand()
+	configureCmd := newConfigureCommand()
+
 	GwifCommand.AddCommand(statusCmd)
 	GwifCommand.AddCommand(printVarsCmd)
 	GwifCommand.AddCommand(printSaTokenCmd)
 	GwifCommand.AddCommand(gcloudExecCmd)
 	GwifCommand.AddCommand(gcloudAuthCmd)
 	GwifCommand.AddCommand(printGitlabJwtCmd)
+	GwifCommand.AddCommand(configureCmd)
+
 }
