@@ -37,7 +37,7 @@ func Execute() {
 
 	if err := rootCmd.Execute(); err != nil {
 		if len(err.Error()) > 0 {
-			utils.Error("%v", err)
+			utils.Error("error: %v", err)
 		}
 		os.Exit(1)
 	}
