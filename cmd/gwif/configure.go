@@ -21,12 +21,23 @@ and authenticating with Google Cloud.`,
 				return err
 			}
 
-			// Step 2: Display the banner
+			// Ensure the section is always closed
+			defer func() {
+				sectionCmd.SetArgs([]string{"--title", "wif", "--end"})
+				sectionCmd.Execute()
+			}()
+
 			bannerCmd := formatCmd.NewBannerCommand()
 			bannerCmd.SetArgs([]string{"--text", "GCP WIF CONFIGURATION"})
 			if err := bannerCmd.Execute(); err != nil {
 				return err
 			}
+
+			// Ensure the banner is always closed
+			defer func() {
+				bannerCmd.SetArgs([]string{"--text", "END GCP WIF CONFIGURATION"})
+				bannerCmd.Execute()
+			}()
 
 			// Step 3: Execute the `print-vars` command
 			printVarsCmd := NewPrintVarsCommand()
@@ -44,18 +55,6 @@ and authenticating with Google Cloud.`,
 			// Step 5: Execute the `gcloud-auth` command
 			gcloudAuthCmd := NewGcloudAuthCommand(nil)
 			if err := gcloudAuthCmd.Execute(); err != nil {
-				return err
-			}
-
-			// Step 6: Display the end banner
-			bannerCmd.SetArgs([]string{"--text", "END GCP WIF CONFIGURATION"})
-			if err := bannerCmd.Execute(); err != nil {
-				return err
-			}
-
-			// Step 7: End the section
-			sectionCmd.SetArgs([]string{"--title", "wif", "--end"})
-			if err := sectionCmd.Execute(); err != nil {
 				return err
 			}
 
