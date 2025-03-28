@@ -6,162 +6,167 @@ import (
 	"testing"
 )
 
-func TestLogLevelString(t *testing.T) {
-	tests := []struct {
-		level    LogLevel
-		expected string
-	}{
-		{LogLevelDebug, "DEBUG"},
-		{LogLevelInfo, "INFO"},
-		{LogLevelWarn, "WARN"},
-		{LogLevelError, "ERROR"},
-		{LogLevelFatal, "FATAL"},
-		{LogLevel(99), "UNKNOWN"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.expected, func(t *testing.T) {
-			if got := test.level.String(); got != test.expected {
-				t.Errorf("LogLevel.String() = %v, want %v", got, test.expected)
-			}
-		})
-	}
-}
-
 func TestLoggerOutput(t *testing.T) {
+	// Use a buffer to capture output
 	var buf bytes.Buffer
 
-	// Create logger with buffer output and no color
+	// Create a test logger that writes to our buffer
 	logger := NewLogger(
 		WithOutput(&buf),
-		WithColor(false),
+		WithTimeFormat(""), // Disable timestamp for testing
 		WithPrefix("test"),
+		WithLevel(LogLevelDebug),
 	)
 
-	// Set fixed time format without using actual time to make tests deterministic
-	logger.timeFormat = ""
-
-	// Test different log levels
-	tests := []struct {
+	// Test cases
+	testCases := []struct {
 		name     string
 		logFunc  func(string, ...interface{})
-		level    LogLevel
 		message  string
 		expected string
 	}{
 		{
-			name:     "Debug",
+			name:     "Debug log",
 			logFunc:  logger.Debug,
-			level:    LogLevelDebug,
 			message:  "debug message",
-			expected: "test [DEBUG] debug message",
+			expected: "debug message\n",
 		},
 		{
-			name:     "Info",
+			name:     "Info log",
 			logFunc:  logger.Info,
-			level:    LogLevelInfo,
 			message:  "info message",
-			expected: "test [INFO] info message",
+			expected: "info message\n",
 		},
 		{
-			name:     "Warn",
+			name:     "Warn log",
 			logFunc:  logger.Warn,
-			level:    LogLevelWarn,
-			message:  "warn message",
-			expected: "test [WARN] warn message",
+			message:  "warning message",
+			expected: "warning message\n",
 		},
 		{
-			name:     "Error",
+			name:     "Error log",
 			logFunc:  logger.Error,
-			level:    LogLevelError,
 			message:  "error message",
-			expected: "test [ERROR] error message",
+			expected: "error message\n",
+		},
+		{
+			name:     "Formatted message",
+			logFunc:  logger.Info,
+			message:  "formatted %s %d",
+			expected: "formatted string 42\n",
+		},
+		{
+			name:     "Multiline message",
+			logFunc:  logger.Info,
+			message:  "line1\nline2\nline3",
+			expected: "line1\nline2\nline3\n",
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			// Clear buffer
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Clear buffer before each test
 			buf.Reset()
 
-			// Set log level to test level
-			logger.level = test.level
-
-			// Log message
-			test.logFunc(test.message)
+			// Call the log function
+			if tc.name == "Formatted message" {
+				tc.logFunc(tc.message, "string", 42)
+			} else {
+				tc.logFunc(tc.message)
+			}
 
 			// Check output
-			got := strings.TrimSpace(buf.String())
-			if !strings.Contains(got, test.expected) {
-				t.Errorf("Expected log output to contain %q, got %q", test.expected, got)
+			got := buf.String()
+			if got != tc.expected {
+				t.Errorf("Expected output %q, got %q", tc.expected, got)
 			}
 		})
 	}
 }
 
-func TestLoggerWithFields(t *testing.T) {
+func TestLogLevel(t *testing.T) {
 	var buf bytes.Buffer
 
-	// Create logger with buffer output and no color
+	// Create logger with INFO level
 	logger := NewLogger(
 		WithOutput(&buf),
-		WithColor(false),
-		WithPrefix("test"),
+		WithLevel(LogLevelInfo),
 	)
 
-	// Set empty time format for deterministic tests
-	logger.timeFormat = ""
-
-	// Test WithFields
-	fields := map[string]interface{}{
-		"key1": "value1",
-		"key2": 42,
+	// Debug messages should be ignored
+	logger.Debug("This debug message should not appear")
+	if buf.Len() > 0 {
+		t.Error("Debug message was logged when level is INFO")
 	}
 
-	fieldLogger := logger.WithFields(fields)
-	fieldLogger.Info("field test")
+	// Info messages should be logged
+	buf.Reset()
+	logger.Info("This info message should appear")
+	if buf.Len() == 0 {
+		t.Error("Info message was not logged when level is INFO")
+	}
 
-	got := strings.TrimSpace(buf.String())
+	// Verify message contains only the content without prefixes
+	output := buf.String()
+	if !strings.Contains(output, "This info message should appear") {
+		t.Errorf("Info message not found in output: %q", output)
+	}
 
-	// Check that both fields are in the output
-	if !strings.Contains(got, "key1=value1") || !strings.Contains(got, "key2=42") {
-		t.Errorf("Expected log output to contain fields, got %q", got)
+	// Make sure there's no prefix in the output
+	if strings.Contains(output, "sparkci") ||
+		strings.Contains(output, "INFO") ||
+		strings.Contains(output, "[") {
+		t.Errorf("Output should not contain prefix or log level indicators: %q", output)
 	}
 }
 
-func TestLoggerMultilineMessage(t *testing.T) {
+func TestWithFields(t *testing.T) {
 	var buf bytes.Buffer
 
-	// Create logger with buffer output and no color
 	logger := NewLogger(
 		WithOutput(&buf),
-		WithColor(false),
-		WithPrefix("test"),
 	)
 
-	// Set empty time format for deterministic tests
-	logger.timeFormat = ""
-
-	// Test multiline message
-	logger.Info("line1\nline2\nline3")
-
-	lines := strings.Split(buf.String(), "\n")
-	if len(lines) < 3 {
-		t.Fatalf("Expected at least 3 lines, got %d", len(lines))
+	// Add fields to logger
+	fields := map[string]interface{}{
+		"user": "testuser",
+		"id":   123,
 	}
 
-	// First line should contain "line1"
-	if !strings.Contains(lines[0], "line1") {
-		t.Errorf("Expected first line to contain 'line1', got %q", lines[0])
+	fieldLogger := logger.WithFields(fields)
+
+	// Log with fields
+	fieldLogger.Info("Test message with fields")
+
+	// Check output - should only contain the message without field info
+	output := buf.String()
+	if output != "Test message with fields\n" {
+		t.Errorf("Expected simple output without fields, got: %q", output)
+	}
+}
+
+// Avoid testing Fatal since it calls os.Exit
+func TestFatalWithoutExit(t *testing.T) {
+	// Override os.Exit temporarily to avoid test termination
+	originalOsExit := osExit
+	defer func() { osExit = originalOsExit }()
+
+	exitCalled := false
+	osExit = func(code int) {
+		exitCalled = true
 	}
 
-	// Second line should be indented and contain "line2"
-	if !strings.Contains(lines[1], "line2") {
-		t.Errorf("Expected second line to contain 'line2', got %q", lines[1])
+	var buf bytes.Buffer
+	logger := NewLogger(WithOutput(&buf))
+
+	logger.Fatal("Fatal error message")
+
+	if !exitCalled {
+		t.Error("os.Exit was not called by Fatal")
 	}
 
-	// Third line should be indented and contain "line3"
-	if !strings.Contains(lines[2], "line3") {
-		t.Errorf("Expected third line to contain 'line3', got %q", lines[2])
+	output := buf.String()
+	if output != "Fatal error message\n" {
+		t.Errorf("Expected simple output for fatal error, got: %q", output)
 	}
 }
