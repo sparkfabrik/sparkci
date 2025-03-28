@@ -33,6 +33,10 @@ Examples:
 				return nil
 			}
 
+			if sectionDescription == "" {
+				sectionDescription = sectionTitle
+			}
+
 			utils.GitLabSectionStart(sectionTitle, sectionDescription)
 			return nil
 		},
