@@ -14,7 +14,7 @@ func newConfigureCommand() *cobra.Command {
 by running all necessary steps, including printing variables, checking status,
 and authenticating with Google Cloud.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Step 1: Start the section
+			// Step: Start the section
 			sectionCmd := formatCmd.NewSectionCommand()
 			sectionCmd.SetArgs([]string{"--title", "wif", "--description", "Workload Identity Federation"})
 			if err := sectionCmd.Execute(); err != nil {
@@ -39,20 +39,20 @@ and authenticating with Google Cloud.`,
 				bannerCmd.Execute()
 			}()
 
-			// Step 3: Execute the `print-vars` command
+			// Step: Execute the `print-vars` command
 			printVarsCmd := NewPrintVarsCommand()
 			if err := printVarsCmd.Execute(); err != nil {
 				return err
 			}
 
-			// Step 4: Execute the `status` command
+			// Step: Execute the `status` command
 			statusCmd := NewStatusCommand()
 			statusCmd.SetArgs([]string{"--silent=false"})
 			if err := statusCmd.Execute(); err != nil {
 				return err
 			}
 
-			// Step 5: Execute the `gcloud-auth` command
+			// Step: Execute the `gcloud-auth` command
 			gcloudAuthCmd := NewGcloudAuthCommand(nil)
 			if err := gcloudAuthCmd.Execute(); err != nil {
 				return err
