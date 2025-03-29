@@ -1,8 +1,6 @@
 package gwif
 
 import (
-	"fmt"
-
 	"github.com/sparkfabrik/sparkci/pkg/gwif"
 	"github.com/sparkfabrik/sparkci/pkg/utils"
 	"github.com/spf13/cobra"
@@ -49,8 +47,6 @@ func NewGcloudAuthCommand(opts *GcloudAuthOptions) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			fmt.Println("gcloud auth activated with WIF")
 			return nil
 		},
 	}
