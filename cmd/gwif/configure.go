@@ -19,22 +19,6 @@ and authenticating with Google Cloud.`,
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Step: Start the section
-			sectionCmd := formatCmd.NewSectionCommand()
-			sectionCmd.SetArgs([]string{"--title", "wif", "--description", "Workload Identity Federation"})
-			if err := sectionCmd.Execute(); err != nil {
-				utils.Error("%v", err)
-				return fmt.Errorf("")
-			}
-
-			// Ensure the section is always closed
-			defer func() {
-				sectionCmd.SetArgs([]string{"--title", "wif", "--end"})
-				if err := sectionCmd.Execute(); err != nil {
-					utils.Warn("Failed to close section: %v", err)
-				}
-			}()
-
 			// Step: Display the banner
 			bannerCmd := formatCmd.NewBannerCommand()
 			bannerCmd.SetArgs([]string{"--text", "GCP WIF CONFIGURATION"})
