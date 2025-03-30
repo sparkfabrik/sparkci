@@ -23,7 +23,7 @@ and authenticating with Google Cloud.`,
 			bannerCmd := formatCmd.NewBannerCommand()
 			bannerCmd.SetArgs([]string{"--text", "GCP WIF CONFIGURATION"})
 			if err := bannerCmd.Execute(); err != nil {
-				utils.Error("\nerror:%v", err)
+				utils.Error("error: %v", err)
 				return fmt.Errorf("")
 			}
 
@@ -31,14 +31,14 @@ and authenticating with Google Cloud.`,
 			defer func() {
 				bannerCmd.SetArgs([]string{"--text", "END GCP WIF CONFIGURATION"})
 				if err := bannerCmd.Execute(); err != nil {
-					utils.Warn("\nerror:Failed to display end banner: %v", err)
+					utils.Warn("error: Failed to display end banner: %v", err)
 				}
 			}()
 
 			// Step: Execute the `print-vars` command
 			printVarsCmd := NewPrintVarsCommand()
 			if err := printVarsCmd.Execute(); err != nil {
-				utils.Error("%v", err)
+				utils.Error("error: %v", err)
 				return fmt.Errorf("")
 			}
 
@@ -46,17 +46,17 @@ and authenticating with Google Cloud.`,
 			statusCmd := NewStatusCommand()
 			statusCmd.SetArgs([]string{"--silent=false"})
 			if err := statusCmd.Execute(); err != nil {
-				utils.Error("\nerror: %v", err)
+				utils.Error("error: %v", err)
 				return fmt.Errorf("")
 			}
 
 			// Step: Execute the `gcloud-auth` command
 			gcloudAuthCmd := NewGcloudAuthCommand(nil)
 			if err := gcloudAuthCmd.Execute(); err != nil {
-				utils.Error("\nerror:%v", err)
+				utils.Error("error: %v", err)
 				return fmt.Errorf("")
 			}
-			fmt.Println("\n\nThe Workload Identity Federation authentication was successful.")
+			utils.Info("The Workload Identity Federation authentication was successful.")
 			return nil
 		},
 	}
