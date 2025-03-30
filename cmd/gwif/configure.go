@@ -56,7 +56,7 @@ and authenticating with Google Cloud.`,
 				utils.Error("\nerror:%v", err)
 				return fmt.Errorf("")
 			}
-			fmt.Println("\nThe Workload Identity Federation authentication was successful.")
+			fmt.Println("\n\nThe Workload Identity Federation authentication was successful.")
 			return nil
 		},
 	}
