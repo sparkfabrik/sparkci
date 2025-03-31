@@ -1,6 +1,7 @@
 package gitlab
 
 import (
+	formatCmd "github.com/sparkfabrik/sparkci/cmd/gitlab/format"
 	"github.com/spf13/cobra"
 )
 
@@ -15,5 +16,7 @@ var GitlabCommand = &cobra.Command{
 }
 
 func init() {
+	cmd := formatCmd.NewFormatCommand()
 	GitlabCommand.AddCommand(printEnvs)
+	GitlabCommand.AddCommand(cmd)
 }

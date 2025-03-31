@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/sparkfabrik/sparkci/cmd/format"
 	"github.com/sparkfabrik/sparkci/cmd/gitlab"
 	"github.com/sparkfabrik/sparkci/cmd/gwif"
 	"github.com/sparkfabrik/sparkci/pkg/utils"
@@ -35,13 +34,12 @@ func Execute() {
 	utils.InitLogging()
 
 	if err := rootCmd.Execute(); err != nil {
-		utils.Fatal(fmt.Sprintf("error: %s", err.Error()))
+		utils.Fatal(err.Error())
 	}
 }
 
 func init() {
 	rootCmd.AddCommand(gitlab.GitlabCommand)
 	rootCmd.AddCommand(gwif.GwifCommand)
-	rootCmd.AddCommand(format.FormatCommand)
 
 }

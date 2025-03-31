@@ -5,9 +5,9 @@ import (
 )
 
 // FormatCommand is the main command for formatting GitLab CI output
-var FormatCommand = newFormatCommand()
+var FormatCommand = NewFormatCommand()
 
-func newFormatCommand() *cobra.Command {
+func NewFormatCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "format",
 		Short: "Format GitLab CI output with sections and banners",
@@ -22,8 +22,8 @@ func newFormatCommand() *cobra.Command {
 	}
 
 	// Add subcommands
-	cmd.AddCommand(newSectionCommand())
-	cmd.AddCommand(newBannerCommand())
+	cmd.AddCommand(NewSectionCommand())
+	cmd.AddCommand(NewBannerCommand())
 
 	return cmd
 }

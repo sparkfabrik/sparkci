@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newBannerCommand() *cobra.Command {
+func NewBannerCommand() *cobra.Command {
 	var bannerText string
 
 	cmd := &cobra.Command{

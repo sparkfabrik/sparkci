@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newSectionCommand() *cobra.Command {
+func NewSectionCommand() *cobra.Command {
 	var sectionTitle string
 	var sectionDescription string
 	var endSection bool
