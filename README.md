@@ -102,6 +102,24 @@ Subcommands:
   sparkci gitlab print-env --format yaml
   ```
 
+- `format` - Format GitLab CI output with sections and banners
+
+  - `section` - Create collapsible sections in GitLab CI output
+
+    ```bash
+    # Start a section
+    sparkci gitlab format section --title "build-logs" --description "Build logs for the project"
+
+    # End a section
+    sparkci gitlab format section --title "build-logs" --end
+    ```
+
+  - `banner` - Print a highlighted banner in GitLab CI output
+    ```bash
+    # Print a banner
+    sparkci gitlab format banner --text "Deployment Started"
+    ```
+
 #### Google Workload Identity Federation (GWIF) Commands
 
 ```
@@ -109,6 +127,20 @@ sparkci gwif [subcommand]
 ```
 
 Subcommands:
+
+- `configure` - Orchestrate the setup of Workload Identity Federation
+
+  ```bash
+  # Configure Workload Identity Federation by running all necessary setup steps
+  sparkci gwif configure
+  ```
+
+- `gcloud-auth` - Authenticate gcloud CLI with WIF
+
+  ```bash
+  # Authenticate gcloud CLI with Workload Identity Federation
+  sparkci gwif gcloud-auth
+  ```
 
 - `gcloud-exec` - Execute a gcloud command with WIF authentication
 
