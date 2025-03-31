@@ -3,7 +3,7 @@ package gwif
 import (
 	"fmt"
 
-	formatCmd "github.com/sparkfabrik/sparkci/cmd/format"
+	formatCmd "github.com/sparkfabrik/sparkci/cmd/gitlab/format"
 	"github.com/sparkfabrik/sparkci/pkg/utils"
 	"github.com/spf13/cobra"
 )
